@@ -10,7 +10,8 @@ logs, and asks a model whether the group is worth waking someone.
 
 ```
 22,833,750 log lines → 11,812 templates → 13,080 Jev calls → $0.64
-the same model and prompt on every line would cost $1,120
+the same 13,080 calls through a $3/M model: $45.82
+asking about every line instead of every template: $1,120
 ```
 
 ![benchmark card](docs/card.png)
@@ -153,10 +154,10 @@ requests, priced at TypeSafe's published $0.042 per million input tokens.
 
 ### Cost and speed
 
-| dataset | lines | templates | Jev calls | input tokens | cost | every line | wall |
-|---|---:|---:|---:|---:|---:|---:|---:|
-| BGL | 4,747,963 | 1,126 | 1,496 | 1.74M | $0.073 | $232 | 55s |
-| Thunderbird sample | 22,833,750 | 11,812 | 13,080 | 15.3M | $0.64 | $1,120 | 6m 23s |
+| dataset | lines | templates | Jev calls | input tokens | cost | at $3/M | every line | wall |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| BGL | 4,747,963 | 1,126 | 1,496 | 1.74M | $0.073 | $5.23 | $232 | 55s |
+| Thunderbird sample | 22,833,750 | 11,812 | 13,080 | 15.3M | $0.64 | $45.82 | $1,120 | 6m 23s |
 
 Templating runs at roughly 390k lines/s on one core. Jev latency was about 370 ms p50
 and 450 ms p95, with zero failed calls. Two independent cold runs routed 99.87% of BGL

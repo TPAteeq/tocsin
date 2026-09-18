@@ -29,6 +29,8 @@
   .row .fill { position: absolute; inset: 0 auto 0 0; border-radius: 0 4px 4px 0; }
   .row .amount { font-size: 26px; font-weight: 600; text-align: right; }
   .row.context .fill { width: 100%; background: var(--context); }
+  .row.mid .fill { width: 4.1%; background: var(--context); }
+  .row.mid .name, .row.mid .amount { color: var(--muted); }
   .row.accent .fill { width: max(0.057%, 3px); background: var(--accent); }
   .row.accent .name, .row.accent .amount { color: var(--ink); }
   .foot { margin-top: auto; display: flex; justify-content: space-between; font-size: 18px; color: var(--muted); border-top: 1px solid var(--hairline); padding-top: 20px; }
@@ -45,11 +47,12 @@
   <div class="kpi"><div class="v">13,080</div><div class="l">Jev calls</div></div>
   <div class="kpi"><div class="v">0</div><div class="l">failed calls</div></div>
 </div>
-<div class="bars" role="img" aria-label="Cost comparison: $1,120 to judge every line versus $0.64 to judge each template once">
-  <div class="row context"><div class="name">Jev on every line</div><div class="track"><div class="fill"></div></div><div class="amount">$1,120</div></div>
-  <div class="row accent"><div class="name">Jev once per template</div><div class="track"><div class="fill"></div></div><div class="amount">$0.64</div></div>
+<div class="bars" role="img" aria-label="Cost comparison: $1,120 to ask about every line, $46 to ask once per template through a $3 per million model, $0.64 to ask once per template through Jev">
+  <div class="row context"><div class="name">Every line, any model</div><div class="track"><div class="fill"></div></div><div class="amount">$1,120</div></div>
+  <div class="row mid"><div class="name">Once per template, $3/M</div><div class="track"><div class="fill"></div></div><div class="amount">$46</div></div>
+  <div class="row accent"><div class="name">Once per template, Jev</div><div class="track"><div class="fill"></div></div><div class="amount">$0.64</div></div>
 </div>
 <div class="foot">
-  <span>Thunderbird HPC logs (LogHub) · jev-1.13.0 at $0.042 / 1M input tokens · same model and prompt · bars to scale</span>
+  <span>Thunderbird HPC logs (LogHub) · jev-1.13.0 at $0.042 / 1M input tokens · 15,274,299 input tokens either way · bars to scale</span>
   <span>github.com/TPAteeq/tocsin</span>
 </div>

@@ -154,29 +154,34 @@
   <p>Code owns the decision, not the model: <code>attention = pageable × (1 − detail)</code>. Above 0.75 it pages, above 0.5 it opens a ticket, everything else is kept as a log line. Pages reach a webhook once per pattern per cooldown, carrying the count since the last alert.</p>
 
   <h2 id="cost">Cost and speed</h2>
-  <p>The saving comes from deduplication, not from the model being cheap. Both bars below price the same model and the same prompt. The only difference is how many times it gets asked.</p>
+  <p>Two separate things make it cheap, and they are worth keeping apart. Grouping decides how many questions get asked, and that is Drain's doing, not the model's. Choosing Jev to answer them decides what each question costs.</p>
 
   <figure>
     <div class="bar-row">
-      <div class="name">Jev on every line</div>
+      <div class="name">Every line, any model</div>
       <div class="track"><div class="fill context" style="width:100%"></div></div>
       <div class="val">$1,120</div>
     </div>
     <div class="bar-row">
-      <div class="name">Jev once per pattern</div>
+      <div class="name">Once per pattern, a $3/M model</div>
+      <div class="track"><div class="fill context" style="width:4.1%"></div></div>
+      <div class="val">$46</div>
+    </div>
+    <div class="bar-row">
+      <div class="name">Once per pattern, Jev</div>
       <div class="track"><div class="fill accent" style="width:max(0.057%, 3px)"></div></div>
       <div class="val">$0.64</div>
     </div>
-    <figcaption>22,833,750 Thunderbird lines. Bars to scale: the blue bar is 0.06% of the grey one.</figcaption>
+    <figcaption>22,833,750 Thunderbird lines, bars to scale. The middle bar is the same 13,080 calls and the same 15,274,299 input tokens, priced at $3 per million instead of Jev's $0.042. Nobody would run the top bar; it is there to show what grouping is worth.</figcaption>
   </figure>
 
   <div class="tablewrap">
   <table>
     <caption>Both datasets, cold runs</caption>
-    <thead><tr><th>Dataset</th><th class="n">Lines</th><th class="n">Patterns</th><th class="n">Jev calls</th><th class="n">Cost</th><th class="n">Every line</th><th class="n">Wall</th></tr></thead>
+    <thead><tr><th>Dataset</th><th class="n">Lines</th><th class="n">Patterns</th><th class="n">Jev calls</th><th class="n">Cost</th><th class="n">At $3/M</th><th class="n">Every line</th><th class="n">Wall</th></tr></thead>
     <tbody>
-      <tr><td>BGL</td><td class="n">4,747,963</td><td class="n">1,126</td><td class="n">1,496</td><td class="n">$0.073</td><td class="n">$232</td><td class="n">55s</td></tr>
-      <tr><td>Thunderbird</td><td class="n">22,833,750</td><td class="n">11,812</td><td class="n">13,080</td><td class="n">$0.64</td><td class="n">$1,120</td><td class="n">6m 23s</td></tr>
+      <tr><td>BGL</td><td class="n">4,747,963</td><td class="n">1,126</td><td class="n">1,496</td><td class="n">$0.073</td><td class="n">$5.23</td><td class="n">$232</td><td class="n">55s</td></tr>
+      <tr><td>Thunderbird</td><td class="n">22,833,750</td><td class="n">11,812</td><td class="n">13,080</td><td class="n">$0.64</td><td class="n">$45.82</td><td class="n">$1,120</td><td class="n">6m 23s</td></tr>
     </tbody>
   </table>
   </div>
