@@ -1,0 +1,10 @@
+[sources.app]
+type = "file"
+include = ["/var/log/app/*.log"]
+
+[sinks.tocsin]
+type = "http"
+inputs = ["app"]
+uri = "http://localhost:4318/ingest"
+encoding.codec = "json"
+framing.method = "newline_delimited"

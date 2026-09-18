@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>tocsin — what is worth waking someone for</title>
+<meta name="description" content="Benchmark and method report for tocsin: log triage that judges one pattern at a time with TypeSafe's Jev.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #fcfcfb;
+    --surface: #ffffff;
+    --ink: #0b0b0b;
+    --ink-2: #52514e;
+    --muted: #898781;
+    --hairline: #e1e0d9;
+    --accent: #2a78d6;
+    --context: #898781;
+    --sans: "Helvetica Neue", Helvetica, Inter, Arial, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #101010;
+      --surface: #1a1a19;
+      --ink: #ffffff;
+      --ink-2: #c3c2b7;
+      --muted: #898781;
+      --hairline: #2c2c2a;
+      --accent: #3987e5;
+      --context: #898781;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 17px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 0 24px; }
+  header { border-bottom: 1px solid var(--hairline); }
+  header .wrap { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding-block: 20px; flex-wrap: wrap; }
+  .word { font-weight: 600; letter-spacing: -0.01em; font-size: 19px; }
+  .word span { color: var(--muted); font-weight: 400; }
+  nav { display: flex; gap: 20px; font-size: 15px; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+  h1 { font-size: clamp(30px, 5vw, 44px); line-height: 1.12; letter-spacing: -0.025em; font-weight: 600; margin: 56px 0 16px; }
+  h2 { font-size: 23px; letter-spacing: -0.015em; font-weight: 600; margin: 56px 0 12px; padding-top: 24px; border-top: 1px solid var(--hairline); }
+  h3 { font-size: 17px; font-weight: 600; margin: 28px 0 8px; }
+  p { margin: 0 0 16px; max-width: 68ch; }
+  .lede { font-size: 19px; color: var(--ink-2); }
+  .muted { color: var(--ink-2); }
+  small, .small { font-size: 14px; color: var(--muted); }
+  code { font-family: var(--mono); font-size: 0.88em; background: var(--surface); border: 1px solid var(--hairline); border-radius: 4px; padding: 1px 5px; }
+  pre { font-family: var(--mono); font-size: 13.5px; line-height: 1.55; background: var(--surface); border: 1px solid var(--hairline); border-radius: 8px; padding: 16px; overflow-x: auto; }
+  pre code { border: 0; background: none; padding: 0; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 24px; margin: 32px 0 8px; }
+  .stat .v { font-size: 30px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.1; }
+  .stat .l { font-size: 14px; color: var(--ink-2); margin-top: 2px; }
+  .tablewrap { overflow-x: auto; margin: 20px 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; font-variant-numeric: tabular-nums; }
+  caption { text-align: left; font-size: 14px; color: var(--muted); padding-bottom: 8px; }
+  th, td { text-align: left; padding: 9px 14px 9px 0; border-bottom: 1px solid var(--hairline); white-space: nowrap; }
+  th { font-weight: 500; color: var(--ink-2); font-size: 14px; }
+  td.n, th.n { text-align: right; }
+  tr.win td { font-weight: 600; }
+  figure { margin: 24px 0; }
+  figcaption { font-size: 14px; color: var(--muted); margin-top: 10px; }
+  .bar-row { display: grid; grid-template-columns: minmax(104px, 186px) 1fr minmax(64px, auto); align-items: center; gap: 14px; margin-bottom: 10px; font-size: 15px; }
+  .bar-row .name { color: var(--ink-2); }
+  .track { height: 22px; position: relative; background: transparent; }
+  .fill { position: absolute; inset: 0 auto 0 0; border-radius: 0 4px 4px 0; }
+  .fill.accent { background: var(--accent); }
+  .fill.context { background: var(--context); }
+  .bar-row .val { text-align: right; font-variant-numeric: tabular-nums; }
+  .legend { display: flex; gap: 18px; font-size: 14px; color: var(--ink-2); margin-bottom: 14px; }
+  .legend span { display: inline-flex; align-items: center; gap: 7px; }
+  .dot { width: 11px; height: 11px; border-radius: 3px; display: inline-block; }
+  .callout { border-left: 3px solid var(--accent); background: var(--surface); padding: 16px 18px; border-radius: 0 8px 8px 0; margin: 24px 0; }
+  .callout p:last-child { margin-bottom: 0; }
+  ul { padding-left: 20px; max-width: 68ch; }
+  li { margin-bottom: 8px; }
+  footer { border-top: 1px solid var(--hairline); margin-top: 64px; padding-block: 28px 56px; font-size: 15px; color: var(--ink-2); }
+  footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  @media (max-width: 560px) {
+    body { font-size: 16px; }
+    th, td { padding-right: 10px; }
+    .bar-row {
+      grid-template-columns: 1fr auto;
+      grid-template-areas: "name val" "track track";
+      row-gap: 5px;
+      margin-bottom: 16px;
+    }
+    .bar-row .name { grid-area: name; }
+    .bar-row .val { grid-area: val; }
+    .bar-row .track { grid-area: track; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="word">tocsin <span>/ benchmark report</span></div>
+    <nav>
+      <a href="#how">Method</a>
+      <a href="#cost">Cost</a>
+      <a href="#accuracy">Accuracy</a>
+      <a href="#data">Data</a>
+      <a href="https://github.com/TPAteeq/tocsin">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <h1>What is actually worth waking someone for?</h1>
+  <p class="lede">tocsin groups a log stream into patterns, asks TypeSafe's Jev about each pattern once, and routes every line to page, ticket or log. This is what it cost and how well it worked across 27.6 million lines of real supercomputer logs, in two datasets.</p>
+
+  <div class="stats">
+    <div class="stat"><div class="v">22.8M</div><div class="l">lines triaged</div></div>
+    <div class="stat"><div class="v">11,812</div><div class="l">patterns</div></div>
+    <div class="stat"><div class="v">$0.64</div><div class="l">total judging cost</div></div>
+    <div class="stat"><div class="v">0</div><div class="l">failed calls</div></div>
+  </div>
+  <p class="small">Thunderbird sample, jev-1.13.0, priced at TypeSafe's published $0.042 per million input tokens.</p>
+
+  <h2 id="how">How it works</h2>
+  <p>Numbers, IPs, UUIDs, hex values and emails get masked. HTTP status codes keep their class, so <code>GET /checkout 500</code> becomes <code>GET /checkout &lt;5xx&gt;</code> and never merges with a 200. Lines are then grouped with Drain, using the streaming engine from codag-drain. A pattern that repeats a million times is judged once.</p>
+  <p>Each new pattern goes to Jev in a single request carrying the paging policy and four typed questions.</p>
+
+  <div class="tablewrap">
+  <table>
+    <caption>The question battery, sent once per pattern</caption>
+    <thead><tr><th>Question</th><th>Type</th><th>What it asks</th></tr></thead>
+    <tbody>
+      <tr><td><code>pageable</code></td><td>noul</td><td>does the policy say to page for this event?</td></tr>
+      <tr><td><code>detail</code></td><td>noul</td><td>is this a stack frame, register dump or continuation line?</td></tr>
+      <tr><td><code>severity</code></td><td>score 0-3</td><td>how bad is it</td></tr>
+      <tr><td><code>area</code></td><td>choice</td><td>which part of the system</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <p>Code owns the decision, not the model: <code>attention = pageable × (1 − detail)</code>. Above 0.75 it pages, above 0.5 it opens a ticket, everything else is kept as a log line. Pages reach a webhook once per pattern per cooldown, carrying the count since the last alert.</p>
+
+  <h2 id="cost">Cost and speed</h2>
+  <p>The saving comes from deduplication, not from the model being cheap. Both bars below price the same model and the same prompt. The only difference is how many times it gets asked.</p>
+
+  <figure>
+    <div class="bar-row">
+      <div class="name">Jev on every line</div>
+      <div class="track"><div class="fill context" style="width:100%"></div></div>
+      <div class="val">$1,120</div>
+    </div>
+    <div class="bar-row">
+      <div class="name">Jev once per pattern</div>
+      <div class="track"><div class="fill accent" style="width:max(0.057%, 3px)"></div></div>
+      <div class="val">$0.64</div>
+    </div>
+    <figcaption>22,833,750 Thunderbird lines. Bars to scale: the blue bar is 0.06% of the grey one.</figcaption>
+  </figure>
+
+  <div class="tablewrap">
+  <table>
+    <caption>Both datasets, cold runs</caption>
+    <thead><tr><th>Dataset</th><th class="n">Lines</th><th class="n">Patterns</th><th class="n">Jev calls</th><th class="n">Cost</th><th class="n">Every line</th><th class="n">Wall</th></tr></thead>
+    <tbody>
+      <tr><td>BGL</td><td class="n">4,747,963</td><td class="n">1,126</td><td class="n">1,496</td><td class="n">$0.073</td><td class="n">$232</td><td class="n">55s</td></tr>
+      <tr><td>Thunderbird</td><td class="n">22,833,750</td><td class="n">11,812</td><td class="n">13,080</td><td class="n">$0.64</td><td class="n">$1,120</td><td class="n">6m 23s</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <p>Grouping runs at roughly 390k lines per second on one core of an M-series laptop. Jev answered in about 370 ms at the median and 450 ms at p95, called from India, with no failed calls in either run. Two independent cold runs routed 99.87% of BGL lines and 99.29% of Thunderbird lines the same way.</p>
+
+  <h2 id="accuracy">Accuracy, including the part that went badly</h2>
+  <p>Both datasets ship with line level alert labels written by the administrators who ran those machines. The baseline is the rule most teams actually have: page on lines matching error and fatal keywords.</p>
+
+  <figure>
+    <div class="legend">
+      <span><i class="dot" style="background:var(--accent)"></i> tocsin</span>
+      <span><i class="dot" style="background:var(--context)"></i> keyword rules</span>
+    </div>
+    <div class="bar-row">
+      <div class="name">BGL &middot; tocsin</div>
+      <div class="track"><div class="fill accent" style="width:94.1%"></div></div>
+      <div class="val">0.941</div>
+    </div>
+    <div class="bar-row">
+      <div class="name">BGL &middot; keywords</div>
+      <div class="track"><div class="fill context" style="width:34.8%"></div></div>
+      <div class="val">0.348</div>
+    </div>
+    <div class="bar-row">
+      <div class="name">Thunderbird &middot; tocsin</div>
+      <div class="track"><div class="fill accent" style="width:12.2%"></div></div>
+      <div class="val">0.122</div>
+    </div>
+    <div class="bar-row">
+      <div class="name">Thunderbird &middot; keywords</div>
+      <div class="track"><div class="fill context" style="width:37.3%"></div></div>
+      <div class="val">0.373</div>
+    </div>
+    <figcaption>PR-AUC against the administrators' alert labels, higher is better. tocsin wins on the dataset it was designed against and loses on the one it had never seen.</figcaption>
+  </figure>
+
+  <div class="tablewrap">
+  <table>
+    <caption>Line level scores at the shipped threshold (page at 0.75)</caption>
+    <thead><tr><th>Dataset</th><th>Role</th><th>Scorer</th><th class="n">Precision</th><th class="n">Recall</th><th class="n">F1</th><th class="n">PR-AUC</th><th class="n">ROC-AUC</th></tr></thead>
+    <tbody>
+      <tr class="win"><td>BGL</td><td>development</td><td>tocsin</td><td class="n">0.913</td><td class="n">0.813</td><td class="n">0.860</td><td class="n">0.941</td><td class="n">0.995</td></tr>
+      <tr><td>BGL</td><td>development</td><td>keyword rules</td><td class="n">0.254</td><td class="n">1.000</td><td class="n">0.406</td><td class="n">0.348</td><td class="n">0.926</td></tr>
+      <tr><td>Thunderbird</td><td>held out</td><td>tocsin</td><td class="n">0.000</td><td class="n">0.000</td><td class="n">0.000</td><td class="n">0.122</td><td class="n">0.867</td></tr>
+      <tr class="win"><td>Thunderbird</td><td>held out</td><td>keyword rules</td><td class="n">0.123</td><td class="n">0.999</td><td class="n">0.220</td><td class="n">0.373</td><td class="n">0.984</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>What happened on Thunderbird</h3>
+  <p>99.7% of its alert lines come from one pattern:</p>
+  <pre><code>kernel: &lt;*&gt; &lt;*&gt; failed, return code = -&lt;NUM&gt; (Fatal error (Local Catastrophic Error))</code></pre>
+  <p>It scored 0.65, which lands in ticket, one notch below a page. The wildcards hide what actually failed, and the default policy had nothing to match on. Meanwhile the patterns it did page were these:</p>
+
+  <div class="tablewrap">
+  <table>
+    <caption>Top pages on Thunderbird, none of them labeled alerts</caption>
+    <thead><tr><th>Pattern</th><th class="n">Attention</th><th class="n">Lines</th><th class="n">Labeled alerts</th></tr></thead>
+    <tbody>
+      <tr><td><code>kernel: Out of Memory: Killed process &lt;NUM&gt; &lt;*&gt;</code></td><td class="n">0.90</td><td class="n">7,545</td><td class="n">0</td></tr>
+      <tr><td><code>kernel: end_request: I/O error, dev sda, sector &lt;NUM&gt;</code></td><td class="n">0.89</td><td class="n">603</td><td class="n">0</td></tr>
+      <tr><td><code>VFS: file-max limit &lt;NUM&gt; reached</code></td><td class="n">0.77</td><td class="n">168,264</td><td class="n">0</td></tr>
+      <tr><td><code>kernel: LustreError: ... No route to &lt;NUM&gt;-&lt;IP&gt;@vib</code></td><td class="n">0.85</td><td class="n">12,524</td><td class="n">0</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="callout">
+    <p>Out of memory kills and disk I/O errors are things most on-call engineers would want to hear about. Thunderbird's administrators did not count them as alerts, and they were right for their machine. That is the finding: a public label set is one site's answer to a local question, so the policy has to be an input rather than something baked into the tool.</p>
+  </div>
+
+  <h2 id="protocol">What was tuned where</h2>
+  <p>The split matters more than the numbers, so here it is in full.</p>
+  <ul>
+    <li>BGL was the development set. The Drain similarity of 0.7 was chosen on its first million lines. The <code>detail</code> question, the default policy and the 0.75 threshold all came out of error analysis on it.</li>
+    <li>An earlier version, before that analysis, scored F1 0.296 and PR-AUC 0.420 on BGL's held-out later 3.75M lines.</li>
+    <li>Thunderbird stayed untouched until one final run, over a sample fixed in advance: every tenth of its 74 shards, 22.8M lines, 1.8% labeled alerts.</li>
+    <li>Nothing was changed after that run. The numbers above come from the shipped code, re-run cold.</li>
+  </ul>
+  <p>If you want to know whether this works for your logs, the answer is to label a sample of your own incidents and run <code>tocsin eval</code> against them. That path is the product.</p>
+
+  <h2 id="data">Data and reproduction</h2>
+  <ul>
+    <li><a href="https://github.com/logpai/loghub">LogHub</a>, the log collection both datasets come from (Zhu et al., ISSRE 2023).</li>
+    <li><a href="https://zenodo.org/records/8196385">BGL on Zenodo</a>: Blue Gene/L, 4,747,963 lines, 348,460 labeled alerts.</li>
+    <li><a href="https://huggingface.co/datasets/logfit-project/Thunderbird">Thunderbird on Hugging Face</a>: 211M lines total, sampled to 22,833,750 for this run.</li>
+    <li>Both logs were collected and labeled by Sandia and LLNL administrators, described in Oliner and Stearley, <a href="https://www.usenix.org/cfdr-data">What Supercomputers Say</a> (DSN 2007).</li>
+  </ul>
+<pre><code>scripts/fetch-loghub.sh &amp;&amp; scripts/fetch-thunderbird-sample.sh
+tocsin eval data/bgl.tsv --out results/bgl.json
+tocsin eval data/tbird-sample.tsv --out results/thunderbird.json</code></pre>
+
+  <h2 id="limits">Limits</h2>
+  <ul>
+    <li>Lines longer than 16 KiB are truncated before grouping.</li>
+    <li>One process per cache file. Two writers on the same file overwrite each other's new entries.</li>
+    <li><code>jev-latest</code> is an alias. Pin a version if you need verdicts to stay fixed.</li>
+    <li>Webhook alerts retry four times with backoff, then get logged and dropped.</li>
+    <li>Calibration was not validated on these labels, and this report makes no claim about it.</li>
+  </ul>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div>MIT licensed. Built on <a href="https://typesafe.ai">TypeSafe's Jev</a> and the <a href="https://github.com/codag-megalith/codag-drain">codag-drain</a> engine.</div>
+    <div><a href="https://github.com/TPAteeq/tocsin">github.com/TPAteeq/tocsin</a></div>
+  </div>
+</footer>
+
+</body>
+</html>

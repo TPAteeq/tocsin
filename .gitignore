@@ -1,0 +1,8 @@
+/target
+/data
+/results/*.json
+/.tocsin
+.env
+.env.*
+!.env.example
+*.log

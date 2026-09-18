@@ -1,0 +1,30 @@
+[package]
+name = "tocsin"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+description = "Log triage at ingest: collapse logs into templates, judge each template once with TypeSafe Jev, page only on what matters."
+license = "MIT"
+repository = "https://github.com/TPAteeq/tocsin"
+readme = "README.md"
+
+[dependencies]
+anyhow = "1"
+axum = "0.8"
+clap = { version = "4", features = ["derive", "env"] }
+drain3_rust = { git = "https://github.com/codag-megalith/codag-drain", rev = "5a84fb050e074b15474fdb264c9e97faaa66c9f5" }
+regex = "1"
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+serde = { version = "1", features = ["derive", "rc"] }
+serde_json = "1"
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "io-util", "sync", "time", "signal", "net"] }
+tower = { version = "0.5", features = ["limit"] }
+tower-http = { version = "0.6", features = ["decompression-gzip"] }
+
+[dev-dependencies]
+flate2 = "1"
+tempfile = "3"
+
+[profile.release]
+lto = "thin"
+codegen-units = 1

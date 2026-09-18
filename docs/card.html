@@ -1,0 +1,55 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>tocsin benchmark card</title>
+<style>
+  :root {
+    --surface: #fcfcfb;
+    --ink: #0b0b0b;
+    --ink-2: #52514e;
+    --muted: #898781;
+    --hairline: #e1e0d9;
+    --accent: #2a78d6;
+    --context: #898781;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { width: 1600px; height: 900px; background: var(--surface); }
+  body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--ink); padding: 72px 88px; display: flex; flex-direction: column; }
+  .eyebrow { font-size: 22px; color: var(--ink-2); letter-spacing: 0.01em; }
+  h1 { font-size: 52px; font-weight: 650; letter-spacing: -0.02em; margin-top: 14px; }
+  .hero { display: flex; align-items: baseline; gap: 28px; margin-top: 48px; }
+  .hero .value { font-size: 132px; font-weight: 650; letter-spacing: -0.04em; line-height: 1; }
+  .hero .label { font-size: 30px; color: var(--ink-2); max-width: 900px; line-height: 1.3; }
+  .kpis { display: flex; gap: 72px; margin-top: 44px; }
+  .kpi .v { font-size: 44px; font-weight: 600; letter-spacing: -0.02em; }
+  .kpi .l { font-size: 20px; color: var(--ink-2); margin-top: 4px; }
+  .bars { margin-top: 56px; display: grid; grid-template-columns: 1fr; gap: 22px; }
+  .row { display: grid; grid-template-columns: 300px 1fr 140px; align-items: center; gap: 24px; }
+  .row .name { font-size: 22px; color: var(--ink-2); }
+  .row .track { height: 28px; position: relative; }
+  .row .fill { position: absolute; inset: 0 auto 0 0; border-radius: 0 4px 4px 0; }
+  .row .amount { font-size: 26px; font-weight: 600; text-align: right; }
+  .row.context .fill { width: 100%; background: var(--context); }
+  .row.accent .fill { width: max(0.057%, 3px); background: var(--accent); }
+  .row.accent .name, .row.accent .amount { color: var(--ink); }
+  .foot { margin-top: auto; display: flex; justify-content: space-between; font-size: 18px; color: var(--muted); border-top: 1px solid var(--hairline); padding-top: 20px; }
+</style>
+<div class="eyebrow">tocsin · open-source log triage on TypeSafe Jev</div>
+<h1>Judge log patterns, not log lines</h1>
+<div class="hero">
+  <div class="value">$0.64</div>
+  <div class="label">to triage 22.8 million real supercomputer log lines</div>
+</div>
+<div class="kpis">
+  <div class="kpi"><div class="v">22.8M</div><div class="l">log lines</div></div>
+  <div class="kpi"><div class="v">11,812</div><div class="l">templates</div></div>
+  <div class="kpi"><div class="v">13,080</div><div class="l">Jev calls</div></div>
+  <div class="kpi"><div class="v">0</div><div class="l">failed calls</div></div>
+</div>
+<div class="bars" role="img" aria-label="Cost comparison: $1,120 to judge every line versus $0.64 to judge each template once">
+  <div class="row context"><div class="name">Jev on every line</div><div class="track"><div class="fill"></div></div><div class="amount">$1,120</div></div>
+  <div class="row accent"><div class="name">Jev once per template</div><div class="track"><div class="fill"></div></div><div class="amount">$0.64</div></div>
+</div>
+<div class="foot">
+  <span>Thunderbird HPC logs (LogHub) · jev-1.13.0 at $0.042 / 1M input tokens · same model and prompt · bars to scale</span>
+  <span>github.com/TPAteeq/tocsin</span>
+</div>

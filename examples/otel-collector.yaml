@@ -1,0 +1,14 @@
+receivers:
+  filelog:
+    include: [/var/log/app/*.log]
+
+exporters:
+  otlphttp/tocsin:
+    endpoint: http://localhost:4318
+    encoding: json
+
+service:
+  pipelines:
+    logs:
+      receivers: [filelog]
+      exporters: [otlphttp/tocsin]

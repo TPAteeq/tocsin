@@ -1,0 +1,16 @@
+{
+  "page": [
+    "Hardware faults: memory or cache errors that were not corrected, failing disks, power loss, overheating, bad cables or interconnect links.",
+    "Crashes, panics, and components that stopped or cannot start.",
+    "Storage failures: filesystems that fail to mount, I/O errors, data corruption.",
+    "Communication failures between parts of the system: lost connections, sockets closed unexpectedly, failed network links.",
+    "Resource exhaustion: out of memory, full disks, exhausted connection pools.",
+    "Security incidents: intrusion attempts or unauthorized access."
+  ],
+  "do_not_page": [
+    "Errors caused by a user or client: bad input, missing or invalid files or programs the user supplied, permission denied for a user's request.",
+    "Problems the system reports as automatically corrected, retried successfully, or recovered.",
+    "Routine status, progress, configuration, and informational messages.",
+    "Warnings about conditions that are not yet affecting service."
+  ]
+}
