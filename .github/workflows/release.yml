@@ -26,10 +26,19 @@ jobs:
         with:
           files: tocsin-*.tar.gz
 
+  # One native runner per architecture. The Dockerfile compiles Rust, which is
+  # too slow to emulate, so each arch pushes a digest and the manifest job joins
+  # them under the release tags.
   image:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - { os: ubuntu-latest, platform: linux/amd64 }
+          - { os: ubuntu-24.04-arm, platform: linux/arm64 }
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
       - uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -39,8 +48,42 @@ jobs:
       - run: echo "image=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
         id: name
       - uses: docker/build-push-action@v6
+        id: build
         with:
-          push: true
-          tags: |
-            ${{ steps.name.outputs.image }}:${{ github.ref_name }}
-            ${{ steps.name.outputs.image }}:latest
+          context: .
+          platforms: ${{ matrix.platform }}
+          outputs: type=image,name=${{ steps.name.outputs.image }},push-by-digest=true,name-canonical=true,push=true
+      - run: mkdir -p /tmp/digests && touch "/tmp/digests/${DIGEST#sha256:}"
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: digest-${{ matrix.os }}
+          path: /tmp/digests/*
+          retention-days: 1
+
+  manifest:
+    needs: image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: /tmp/digests
+          pattern: digest-*
+          merge-multiple: true
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - run: echo "image=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
+        id: name
+      - working-directory: /tmp/digests
+        env:
+          IMAGE: ${{ steps.name.outputs.image }}
+        run: |
+          docker buildx imagetools create \
+            -t "$IMAGE:$GITHUB_REF_NAME" -t "$IMAGE:latest" \
+            $(printf "$IMAGE@sha256:%s " *)
+          docker buildx imagetools inspect "$IMAGE:$GITHUB_REF_NAME"
