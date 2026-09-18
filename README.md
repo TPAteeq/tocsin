@@ -15,9 +15,8 @@ the same model and prompt on every line would cost $1,120
 
 ![benchmark card](docs/card.png)
 
-The full write-up, including the run where it lost, is in
-[docs/index.html](docs/index.html) (published at
-<https://claude.ai/artifact/TUfJdtK12LUzd66eBeTVcU>).
+The full write-up, including the run where it lost, is at
+<https://tpateeq.github.io/tocsin/>, built from [docs/index.html](docs/index.html).
 
 ## How it works
 
